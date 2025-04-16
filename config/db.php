@@ -1,12 +1,18 @@
 <?php
-$host = 'localhost';
-$dbname = 'imdb';
+$host = 'mysql';
+$db   = 'imdb';
 $user = 'root';
-$password = '';
+$pass = 'rootpassword';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die(json_encode(["success" => false, "message" => "Erreur DB: " . $e->getMessage()]));
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    jsonResponse(['success' => false, 'message' => 'Connexion à la base de données échouée.'], 500);
 }
