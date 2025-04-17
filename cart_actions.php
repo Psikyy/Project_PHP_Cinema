@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once 'includes/functions.php';
 
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Utilisateur non connecté.']);
+    header('Location: login.php');
     exit;
 }
 
@@ -18,7 +18,7 @@ $conn = getDbConnection();
 switch ($action) {
     case 'add':
         if (!isset($_POST['film_id'])) {
-            echo json_encode(['success' => false, 'message' => 'ID du film manquant.']);
+            header('Location: index.php?error=missing_id');
             exit;
         }
 
@@ -38,45 +38,49 @@ switch ($action) {
         }
 
         if ($stmt->execute(['user_id' => $userId, 'film_id' => $filmId, 'quantity' => $quantity])) {
-            echo json_encode(['success' => true, 'message' => 'Film ajouté au panier.']);
+            // ✅ Redirection après succès
+            header('Location: cart.php');
+            exit;
         } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur lors de l\'ajout du film.']);
+            // ❌ Erreur → retour page film
+            header('Location: film.php?id=' . $filmId . '&error=add_failed');
+            exit;
         }
-        break;
 
-        case 'remove':
-            if (!isset($_POST['film_id'])) {
-                echo json_encode(['success' => false, 'message' => 'ID du film manquant.']);
-                exit;
-            }
-    
-            $filmId = intval($_POST['film_id']);
-    
-            $stmt = $conn->prepare("DELETE FROM paniers WHERE utilisateur_id = :user_id AND film_id = :film_id");
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-            $stmt->bindParam(':film_id', $filmId, PDO::PARAM_INT);
-    
-            if ($stmt->execute()) {
-                echo json_encode(['success' => true, 'message' => 'Film retiré du panier.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Erreur lors du retrait du film.']);
-            }
-            break;
-    
-        case 'clear':
-            // Vider le panier
-            $stmt = $conn->prepare("DELETE FROM paniers WHERE utilisateur_id = :user_id");
-            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-    
-            if ($stmt->execute()) {
-                echo json_encode(['success' => true, 'message' => 'Le panier a été vidé avec succès.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Erreur lors du vidage du panier.']);
-            }
-            break;
-    
-        default:
-            echo json_encode(['success' => false, 'message' => 'Action inconnue.']);
-            break;
-    }
-    ?>
+    case 'remove':
+        if (!isset($_POST['film_id'])) {
+            header('Location: cart.php');
+            exit;
+        }
+
+        $filmId = intval($_POST['film_id']);
+
+        $stmt = $conn->prepare("DELETE FROM paniers WHERE utilisateur_id = :user_id AND film_id = :film_id");
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindParam(':film_id', $filmId, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            header('Location: cart.php');
+            exit;
+        } else {
+            header('Location: cart.php?error=remove_failed');
+            exit;
+        }
+
+    case 'clear':
+        $stmt = $conn->prepare("DELETE FROM paniers WHERE utilisateur_id = :user_id");
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            header('Location: cart.php');
+            exit;
+        } else {
+            header('Location: cart.php?error=clear_failed');
+            exit;
+        }
+
+    default:
+        header('Location: index.php?error=invalid_action');
+        exit;
+}
+?>
