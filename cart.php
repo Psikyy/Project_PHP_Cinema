@@ -44,16 +44,11 @@ include 'includes/header.php';
                         </td>
                         <td><?php echo number_format($item['prix'] * $item['quantite'], 2, ',', ' '); ?> €</td>
                         <td>
-                        <form action="cart_actions.php" method="POST">
-                            <input type="hidden" name="action" value="add">
-                            <input type="hidden" name="film_id" value="<?php echo $film['id']; ?>">
-                        </form>
-
-                        <form method="POST" action="cart_actions.php" class="remove-form">
-                            <input type="hidden" name="action" value="remove">
-                            <input type="hidden" name="film_id" value="<?= $item['film_id'] ?>">
-                            <button type="submit" class="remove-btn">Supprimer</button>
-                        </form>
+                            <form method="POST" action="cart_actions.php" class="remove-form">
+                                <input type="hidden" name="action" value="remove">
+                                <input type="hidden" name="film_id" value="<?= $item['film_id'] ?>">
+                                <button type="submit" class="remove-btn">Supprimer</button>
+                            </form>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -67,8 +62,8 @@ include 'includes/header.php';
                     <span class="cart-total-price"><?php echo number_format($cartTotal, 2, ',', ' '); ?> €</span>
                 </div>
                 <div class="cart-actions">
-                    <form action="cart_actions.php" method="POST">
-                        <input type="hidden" name="action" value="empty">
+                    <form action="cart_actions.php" method="POST" id="clearCartForm">
+                        <input type="hidden" name="action" value="clear">
                         <button type="submit" class="btn empty-cart-btn">Vider le panier</button>
                     </form>
                     <a href="checkout.php" class="btn">Passer à la caisse</a>
@@ -82,4 +77,51 @@ include 'includes/header.php';
     <?php endif; ?>
 </section>
 
+<!-- Notification Box -->
+<div id="notification" class="notification hidden">
+    <p id="notification-message"></p>
+</div>
+
 <?php include 'includes/footer.php'; ?>
+
+<script>
+// Fonction pour afficher la notification
+function showNotification(message, success = true) {
+    const notification = document.getElementById('notification');
+    const messageElem = document.getElementById('notification-message');
+    notification.classList.remove('hidden');
+    messageElem.textContent = message;
+
+    // Appliquer une classe de succès ou d'erreur
+    notification.classList.add(success ? 'success' : 'error');
+
+    // Appliquer un délai avant de cacher la notification
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 3000);
+}
+
+// Vider le panier
+document.getElementById('clearCartForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    if (confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
+        fetch('cart_actions.php', {
+            method: 'POST',
+            body: new URLSearchParams(new FormData(this))
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Le panier a été vidé avec succès.', true);
+                window.location.href = 'cart.php'; // Rediriger vers le panier après vidage
+            } else {
+                showNotification('Erreur lors du vidage du panier.', false);
+            }
+        })
+        .catch(error => {
+            showNotification('Une erreur est survenue, veuillez réessayer.', false);
+        });
+    }
+});
+</script>

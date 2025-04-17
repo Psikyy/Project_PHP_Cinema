@@ -44,27 +44,39 @@ switch ($action) {
         }
         break;
 
-    case 'remove':
-        if (!isset($_POST['film_id'])) {
-            echo json_encode(['success' => false, 'message' => 'ID du film manquant.']);
-            exit;
-        }
-
-        $filmId = intval($_POST['film_id']);
-
-        $stmt = $conn->prepare("DELETE FROM paniers WHERE utilisateur_id = :user_id AND film_id = :film_id");
-        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-        $stmt->bindParam(':film_id', $filmId, PDO::PARAM_INT);
-
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'message' => 'Film retiré du panier.']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Erreur lors du retrait du film.']);
-        }
-        break;
-
-    default:
-        echo json_encode(['success' => false, 'message' => 'Action inconnue.']);
-        break;
-}
-?>
+        case 'remove':
+            if (!isset($_POST['film_id'])) {
+                echo json_encode(['success' => false, 'message' => 'ID du film manquant.']);
+                exit;
+            }
+    
+            $filmId = intval($_POST['film_id']);
+    
+            $stmt = $conn->prepare("DELETE FROM paniers WHERE utilisateur_id = :user_id AND film_id = :film_id");
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':film_id', $filmId, PDO::PARAM_INT);
+    
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true, 'message' => 'Film retiré du panier.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Erreur lors du retrait du film.']);
+            }
+            break;
+    
+        case 'clear':
+            // Vider le panier
+            $stmt = $conn->prepare("DELETE FROM paniers WHERE utilisateur_id = :user_id");
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+    
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true, 'message' => 'Le panier a été vidé avec succès.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Erreur lors du vidage du panier.']);
+            }
+            break;
+    
+        default:
+            echo json_encode(['success' => false, 'message' => 'Action inconnue.']);
+            break;
+    }
+    ?>

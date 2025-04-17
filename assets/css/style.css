@@ -616,3 +616,29 @@ footer {
         display: none;
     }
 }
+
+/* Notification */
+.notification {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    z-index: 9999;
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+.notification.error {
+    background-color: #dc3545;
+}
+
+.notification.hidden {
+    display: none;
+}
+
+.notification p {
+    margin: 0;
+}

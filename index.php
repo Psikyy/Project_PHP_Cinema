@@ -1,15 +1,16 @@
 <?php
 require_once 'includes/functions.php';
 
-$pageTitle = 'Accueil';
-$pageDescription = 'Bienvenue sur Internet Movies DataBase & Co - Votre source pour tous les films!';
+// Rediriger si l'utilisateur n'est pas connecté
+redirectIfNotLoggedIn();
 
-// Récupérer les films les plus récents
+// Récupérer les films récents
 $recentFilms = getAllFilms(6);
 
 include 'includes/header.php';
 ?>
 
+<!-- Section des films récents -->
 <section class="hero">
     <h2>Bienvenue sur Internet Movies DataBase & Co</h2>
     <p>Découvrez et achetez les meilleurs films de tous les temps. Notre collection comprend des milliers de films de tous genres, des grands classiques aux dernières sorties.</p>
@@ -21,7 +22,7 @@ include 'includes/header.php';
         <h2>Films récents</h2>
         <a href="search.php" class="view-all">Voir tout</a>
     </div>
-    
+
     <div class="film-grid">
         <?php foreach ($recentFilms as $film): ?>
             <div class="film-card">
@@ -37,10 +38,10 @@ include 'includes/header.php';
                     </div>
                     <div class="film-price">
                         <span class="price"><?php echo number_format($film['prix'], 2, ',', ' '); ?> €</span>
-                        <form action="cart_actions.php" method="POST">
+                        <form action="cart_actions.php" method="POST" class="add-to-cart-form">
                             <input type="hidden" name="action" value="add">
                             <input type="hidden" name="film_id" value="<?php echo $film['id']; ?>">
-                            <button type="submit" class="btn add-to-cart-btn"><i class="fas fa-shopping-cart"></i></button>
+                            <button type="submit" class="btn add-to-cart-btn"><i class="fas fa-shopping-cart"></i> Ajouter au panier</button>
                         </form>
                     </div>
                 </div>
@@ -49,32 +50,56 @@ include 'includes/header.php';
     </div>
 </section>
 
-<section class="categories">
-    <div class="section-header">
-        <h2>Catégories</h2>
-    </div>
-    
-    <div class="category-grid">
-        <?php foreach ($categories as $category): ?>
-            <a href="category.php?id=<?php echo $category['id']; ?>" class="category-card">
-                <div class="category-content">
-                    <h3><?php echo $category['nom']; ?></h3>
-                </div>
-            </a>
-        <?php endforeach; ?>
-    </div>
-</section>
-
-<section class="about-section">
-    <div class="section-header">
-        <h2>À propos d'Internet Movies DataBase & Co</h2>
-    </div>
-    
-    <div class="about-content">
-        <p>Internet Movies DataBase & Co est votre destination ultime pour tous les films. Que vous soyez fan d'action, de drame, de comédie ou de science-fiction, nous avons ce qu'il vous faut.</p>
-        <p>Notre mission est de rendre accessible le plus grand nombre de films pour tous les cinéphiles. Nous proposons une large sélection de films, des grands classiques aux dernières sorties.</p>
-        <p>Parcourez notre catalogue, trouvez votre prochain film préféré et commandez-le en quelques clics !</p>
-    </div>
-</section>
+<!-- Notification Box -->
+<div id="notification" class="notification hidden">
+    <p id="notification-message"></p>
+</div>
 
 <?php include 'includes/footer.php'; ?>
+
+<script>
+// Fonction pour afficher la notification
+function showNotification(message, success = true) {
+    const notification = document.getElementById('notification');
+    const messageElem = document.getElementById('notification-message');
+    notification.classList.remove('hidden');
+    messageElem.textContent = message;
+
+    // Appliquer une classe de succès ou d'erreur
+    notification.classList.add(success ? 'success' : 'error');
+
+    // Appliquer un délai avant de cacher la notification
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 3000);
+}
+
+// Gestion des actions du panier (ajouter / retirer)
+document.querySelectorAll('.add-to-cart-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const action = form.querySelector('input[name="action"]').value;
+        const filmId = form.querySelector('input[name="film_id"]').value;
+
+        fetch('cart_actions.php', {
+            method: 'POST',
+            body: new URLSearchParams(new FormData(form))
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, true);
+                if (action === 'remove') {
+                    window.location.href = 'index.php';  // Rediriger vers l'accueil après suppression
+                }
+            } else {
+                showNotification(data.message, false);
+            }
+        })
+        .catch(error => {
+            showNotification('Une erreur est survenue, veuillez réessayer.', false);
+        });
+    });
+});
+</script>
