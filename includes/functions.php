@@ -238,6 +238,10 @@ function logoutUser() {
 
 // Fonction pour connecter un utilisateur
 function loginUser($email, $password) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
     $conn = getDbConnection();
     $stmt = $conn->prepare("SELECT * FROM utilisateurs WHERE email = :email");
     $stmt->bindParam(':email', $email, PDO::PARAM_STR);
@@ -248,10 +252,8 @@ function loginUser($email, $password) {
         
         // Vérifier le mot de passe
         if (password_verify($password, $user['mot_de_passe'])) {
-            // Démarrer la session et stocker les informations de l'utilisateur
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_email'] = $user['email'];
-            
             return ['success' => true, 'message' => 'Connexion réussie.'];
         }
     }

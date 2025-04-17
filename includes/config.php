@@ -10,5 +10,7 @@ define('SITE_URL', 'http://localhost');
 define('SITE_NAME', 'Internet Movies DataBase & Co');
 
 // Configuration des sessions
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ?>

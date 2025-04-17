@@ -44,11 +44,16 @@ include 'includes/header.php';
                         </td>
                         <td><?php echo number_format($item['prix'] * $item['quantite'], 2, ',', ' '); ?> €</td>
                         <td>
-                            <form action="cart_actions.php" method="POST">
-                                <input type="hidden" name="action" value="remove">
-                                <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
-                                <button type="submit" class="remove-btn">Supprimer</button>
-                            </form>
+                        <form action="cart_actions.php" method="POST">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="film_id" value="<?php echo $film['id']; ?>">
+                        </form>
+
+                        <form method="POST" action="cart_actions.php" class="remove-form">
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="film_id" value="<?= $item['film_id'] ?>">
+                            <button type="submit" class="remove-btn">Supprimer</button>
+                        </form>
                         </td>
                     </tr>
                 <?php endforeach; ?>
