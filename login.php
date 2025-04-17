@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($result['success']) {
             // Rediriger vers la page demandée ou l'accueil
-            header('            Location: ' . $redirect);
+            header('Location: ' . $redirect);
             exit;
         } else {
             // Afficher un message d'erreur en cas d'échec

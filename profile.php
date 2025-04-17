@@ -33,9 +33,12 @@ include 'includes/header.php';
         <div class="profile-section">
             <h3>Informations personnelles</h3>
             <p><strong>Email :</strong> <?php echo htmlspecialchars($user['email']); ?></p>
-            <p><strong>Date d'inscription :</strong> <?php echo date('d/m/Y', strtotime($user['created_at'])); ?></p>
+            <p><strong>Date d'inscription :</strong> 
+                <?php 
+                echo !empty($user['created_at']) ? date('d/m/Y', strtotime($user['created_at'])) : 'Non disponible';
+                ?>
+            </p>
         </div>
-        
         <div class="profile-section">
             <h3>Changer le mot de passe</h3>
             <form action="change_password.php" method="POST">
