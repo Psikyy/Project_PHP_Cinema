@@ -1,12 +1,33 @@
-version: '3.8'
+version: '3'
+
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_imdb
+  # Service PHP avec Apache
+  web:
+    image: php:8.1-apache
     ports:
-      - "3307:3306"
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - MYSQL_HOST=db
+    command: >
+      bash -c "docker-php-ext-install mysqli pdo pdo_mysql &&
+               a2enmod rewrite &&
+               apache2-foreground"
+
+  # Service MySQL
+  db:
+    image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: imdb
+    ports:
+      - "3308:3306"
     volumes:
-      - ./mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+
+volumes:
+  db_data:
